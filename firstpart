@@ -3,6 +3,7 @@
 #define LEFT_MOTOR_BACKWARD 10
 #define RIGHT_MOTOR_FORWARD 5
 #define RIGHT_MOTOR_BACKWARD 6
+#define DELAY_BEFORE_BACKWARD 2000 // 2 sec delay before backwards
 
 // pulses per rotatin?? assumed
 #define PULSES_PER_ROTATION 500  //are we using encoders?
@@ -49,6 +50,7 @@ void stopMotors() {
 
 void loop() {
     moveForward(3.82);//wheel rotations calculation from 5 * 0.764 rot per foot
+delay(DELAY_BEFORE_BACKWARD); 
     moveBackward(1.53);
     turn180(5.6); // calculated from wheel rotations for arc pi x 2 x14/ circumference
     while (true); // stop after turn
