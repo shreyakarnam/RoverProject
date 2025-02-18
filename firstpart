@@ -1,0 +1,55 @@
+//motor control pins
+#define LEFT_MOTOR_FORWARD 9 //check to see if pins are right
+#define LEFT_MOTOR_BACKWARD 10
+#define RIGHT_MOTOR_FORWARD 5
+#define RIGHT_MOTOR_BACKWARD 6
+
+// pulses per rotatin?? assumed
+#define PULSES_PER_ROTATION 500  //are we using encoders?
+#define ROTATION_DELAY 1000  // guess motor speed
+
+void setup() {
+    pinMode(LEFT_MOTOR_FORWARD, OUTPUT);
+    pinMode(LEFT_MOTOR_BACKWARD, OUTPUT);
+    pinMode(RIGHT_MOTOR_FORWARD, OUTPUT);
+    pinMode(RIGHT_MOTOR_BACKWARD, OUTPUT);
+}
+
+void moveForward(float rotations) {
+    int duration = ROTATION_DELAY * rotations;
+    digitalWrite(LEFT_MOTOR_FORWARD, HIGH);
+    digitalWrite(RIGHT_MOTOR_FORWARD, HIGH);
+    delay(duration);
+    stopMotors();
+}
+
+void moveBackward(float rotations) {
+    int duration = ROTATION_DELAY * rotations;
+    digitalWrite(LEFT_MOTOR_BACKWARD, HIGH);
+    digitalWrite(RIGHT_MOTOR_BACKWARD, HIGH);
+    delay(duration);
+    stopMotors();
+}
+
+void turn180(float outerRotations) {
+    int duration = ROTATION_DELAY * outerRotations;
+    analogWrite(LEFT_MOTOR_FORWARD, 255);  // fast speed outer wheel
+    analogWrite(RIGHT_MOTOR_FORWARD, 120); // slow inner wheel 
+    delay(duration);
+    stopMotors();
+}
+
+void stopMotors() {
+    digitalWrite(LEFT_MOTOR_FORWARD, LOW);
+    digitalWrite(LEFT_MOTOR_BACKWARD, LOW);
+    digitalWrite(RIGHT_MOTOR_FORWARD, LOW);
+    digitalWrite(RIGHT_MOTOR_BACKWARD, LOW);
+    delay(500);
+}
+
+void loop() {
+    moveForward(3.82);//wheel rotations calculation from 5 * 0.764 rot per foot
+    moveBackward(1.53);
+    turn180(5.6); // calculated from wheel rotations for arc pi x 2 x14/ circumference
+    while (true); // stop after turn
+}
