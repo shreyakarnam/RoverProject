@@ -23,9 +23,6 @@
     // Reverse 24 inches
     driveStraight(-24, 150);
 
-    // Move forward 30 inches (adjust as needed before turning)
-    driveStraight(30, 150);
-
     // Perform a 180-degree turn (left wheel backward, right wheel forward)
     motors.leftMotor(-150);
     motors.rightMotor(150);
