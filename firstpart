@@ -19,13 +19,16 @@
 {
     // Move forward 60 inches
     driveStraight(60, 150);
+delay (1000)
 
-    // Reverse 24 inches
-    driveStraight(-24, 150);
+//go back
+       motors.leftMotor(-500);
+      motors.rightMotor(-500);
+      delay(1200);
 
     // Perform a 180-degree turn (left wheel backward, right wheel forward)
-    motors.leftMotor(-150);
-    motors.rightMotor(150);
+    motors.leftMotor(-250);
+    motors.rightMotor(250);
     delay(1300);  // Adjust this delay for an accurate 180-degree turn
 
     motors.brake();  // Stop after turning
