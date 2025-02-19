@@ -1,0 +1,137 @@
+ //Code to run the ramp to start the course
+    #include <RedBot.h>
+    RedBotMotors motors;
+    
+    RedBotEncoder encoder = RedBotEncoder(A2, 10);
+    int buttonPin = 12; //check pin
+    int countsPerRev = 192;   // 4 pairs of N-S x 48:1 gearbox = 192 ticks per wheel rev
+    
+    float wheelDiam = 5;  // diam = 65mm / 25.4 mm/in
+    float wheelCirc = PI*wheelDiam;  // Redbot wheel circumference = pi*D
+    
+    void setup()
+    {
+      pinMode(buttonPin, INPUT_PULLUP);
+      Serial.begin(9600);
+      // Move forward 60 inches
+    driveStraight(35, 150);
+    delay (1000);
+
+//go back
+      motors.leftMotor(-500);
+      motors.rightMotor(-500);
+      delay(1200);
+
+//get wall-e
+     RedBotMotors motors;
+     
+     pinMode(9, OUTPUT);
+     analogWrite(9,100);
+     delay(500);
+     analogWrite(9,0);
+
+    // Perform a 180-degree turn (left wheel backward, right wheel forward)
+    motors.leftMotor(-250);
+    motors.rightMotor(250);
+    delay(130);  // Adjust this delay for an accurate 180-degree turn
+ 
+ driveStraight(5, 150);
+    delay (1000);
+
+    motors.leftMotor(-250);
+    motors.rightMotor(250);
+    delay(130); 
+
+    motors.brake();  // Stop after turning
+
+    }
+    
+ void loop(void){
+    
+}
+    
+    void driveStraight(float distance, int motorPower)
+    {
+      long lCount = 0;
+      long rCount = 0;
+      long targetCount;
+      float numRev;
+    
+      // variables for tracking the left and right encoder counts
+      long prevlCount, prevrCount;
+    
+      long lDiff, rDiff;  // diff between current encoder count and previous count
+    
+      // variables for setting left and right motor power
+      int leftPower = motorPower;
+      int rightPower = motorPower;
+    
+      // variable used to offset motor power on right vs left to keep straight.
+      int offset = 5;  // offset amount to compensate Right vs. Left drive
+    
+      numRev = distance / wheelCirc;  // calculate the target # of rotations
+      targetCount = numRev * countsPerRev;    // calculate the target count
+    
+      // debug
+      Serial.print("driveStraight() ");
+      Serial.print(distance);
+      Serial.print(" inches at ");
+      Serial.print(motorPower);
+      Serial.println(" power.");
+    
+      Serial.print("Target: ");
+      Serial.print(numRev, 3);
+      Serial.println(" revolutions.");
+      Serial.println();
+      
+      // print out header
+      Serial.print("Left\t");   // "Left" and tab
+      Serial.print("Right\t");  // "Right" and tab
+      Serial.println("Target count");
+      Serial.println("============================");
+    
+      encoder.clearEnc(BOTH);    // clear the encoder count
+      delay(100);  // short delay before starting the motors.
+      
+      motors.drive(motorPower);  // start motors 
+    
+      while (lCount < targetCount)
+      {
+        // while the right encoder is less than the target count -- debug print 
+        // the encoder values and wait -- this is a holding loop.
+        lCount = encoder.getTicks(LEFT);
+        rCount = encoder.getTicks(RIGHT);
+        Serial.print(lCount);
+        Serial.print("\t");
+        Serial.print(rCount);
+        Serial.print("\t");
+        Serial.println(targetCount);
+    
+        motors.leftDrive(leftPower);
+        motors.rightDrive(rightPower);
+    
+        // calculate the rotation "speed" as a difference in the count from previous cycle.
+        //lDiff = (lCount - prevlCount);
+        //rDiff = (rCount - prevrCount);
+    
+        // store the current count as the "previous" count for the next cycle.
+        //prevlCount = lCount;
+        //prevrCount = rCount;
+    
+        // if left is faster than the right, slow down the left / speed up right
+        //if (lDiff > rDiff) 
+        //{
+          //leftPower = leftPower - offset;
+          //rightPower = rightPower + offset;
+        //}
+        // if right is faster than the left, speed up the left / slow down right
+        //else if (lDiff < rDiff) 
+        //{
+          //leftPower = leftPower + offset;  
+          //rightPower = rightPower - offset;
+        //}
+        delay(50);  // short delay to give motors a chance to respond.
+      }
+      // now apply "brakes" to stop the motors.
+      motors.brake();  
+    }
