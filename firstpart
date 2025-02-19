@@ -48,13 +48,13 @@ void stopMotors() {
     delay(500);
 }
 
-#define RedBotMotors motors; //defines the grabber servo
-void setup() {
-  pinMode(9, OUTPUT);
-  analogWrite(9,100); //initial speed
-  delay(500);
-  analogWrite(9,0); //final speed is 0
-}
+//#define RedBotMotors motors; //defines the grabber servo
+//void setup() {
+  //pinMode(9, OUTPUT);
+  //analogWrite(9,100); //initial speed
+  //delay(500);
+  //analogWrite(9,0); //final speed is 0
+//}
 
 void loop() {
     moveForward(3.82);//wheel rotations calculation from 5 * 0.764 rot per foot
