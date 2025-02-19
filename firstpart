@@ -1,65 +1,123 @@
-//motor control pins
-#define LEFT_MOTOR_FORWARD 9 //check to see if pins are right
-#define LEFT_MOTOR_BACKWARD 10
-#define RIGHT_MOTOR_FORWARD 5
-#define RIGHT_MOTOR_BACKWARD 6
-#define DELAY_BEFORE_BACKWARD 2000 // 2 sec delay before backwards
+ //Code to run the ramp to start the course
+    #include <RedBot.h>
+    RedBotMotors motors;
+    
+    RedBotEncoder encoder = RedBotEncoder(A2, 10);
+    int buttonPin = 12; //check pin
+    int countsPerRev = 192;   // 4 pairs of N-S x 48:1 gearbox = 192 ticks per wheel rev
+    
+    float wheelDiam = 5;  // diam = 65mm / 25.4 mm/in
+    float wheelCirc = PI*wheelDiam;  // Redbot wheel circumference = pi*D
+    
+    void setup()
+    {
+      pinMode(buttonPin, INPUT_PULLUP);
+      Serial.begin(9600);
+    }
+    
+ void loop(void)
+{
+    // Move forward 60 inches
+    driveStraight(60, 150);
 
-// pulses per rotatin?? assumed
-#define PULSES_PER_ROTATION 500  //are we using encoders?
-#define ROTATION_DELAY 1000  // guess motor speed
+    // Reverse 24 inches
+    driveStraight(-24, 150);
 
-void setup() {
-    pinMode(LEFT_MOTOR_FORWARD, OUTPUT);
-    pinMode(LEFT_MOTOR_BACKWARD, OUTPUT);
-    pinMode(RIGHT_MOTOR_FORWARD, OUTPUT);
-    pinMode(RIGHT_MOTOR_BACKWARD, OUTPUT);
+    // Move forward 30 inches (adjust as needed before turning)
+    driveStraight(30, 150);
+
+    // Perform a 180-degree turn (left wheel backward, right wheel forward)
+    motors.leftMotor(-150);
+    motors.rightMotor(150);
+    delay(1300);  // Adjust this delay for an accurate 180-degree turn
+
+    motors.brake();  // Stop after turning
+
+    return;
 }
-
-void moveForward(float rotations) {
-    int duration = ROTATION_DELAY * rotations;
-    digitalWrite(LEFT_MOTOR_FORWARD, HIGH);
-    digitalWrite(RIGHT_MOTOR_FORWARD, HIGH);
-    delay(duration);
-    stopMotors();
-}
-
-void moveBackward(float rotations) {
-    int duration = ROTATION_DELAY * rotations;
-    digitalWrite(LEFT_MOTOR_BACKWARD, HIGH);
-    digitalWrite(RIGHT_MOTOR_BACKWARD, HIGH);
-    delay(duration);
-    stopMotors();
-}
-
-void turn180(float outerRotations) {
-    int duration = ROTATION_DELAY * outerRotations;
-    analogWrite(LEFT_MOTOR_FORWARD, 255);  // fast speed outer wheel
-    analogWrite(RIGHT_MOTOR_FORWARD, 120); // slow inner wheel 
-    delay(duration);
-    stopMotors();
-}
-
-void stopMotors() {
-    digitalWrite(LEFT_MOTOR_FORWARD, LOW);
-    digitalWrite(LEFT_MOTOR_BACKWARD, LOW);
-    digitalWrite(RIGHT_MOTOR_FORWARD, LOW);
-    digitalWrite(RIGHT_MOTOR_BACKWARD, LOW);
-    delay(500);
-}
-
-//#define RedBotMotors motors; //defines the grabber servo
-//void setup() {
-  //pinMode(9, OUTPUT);
-  //analogWrite(9,100); //initial speed
-  //delay(500);
-  //analogWrite(9,0); //final speed is 0
-//}
-
-void loop() {
-    moveForward(3.82);//wheel rotations calculation from 5 * 0.764 rot per foot
-delay(DELAY_BEFORE_BACKWARD); 
-    moveBackward(1.53);
-    turn180(5.6); // calculated from wheel rotations for arc pi x 2 x14/ circumference
-    while (true); // stop after turn
-}
+    
+    void driveStraight(float distance, int motorPower)
+    {
+      long lCount = 0;
+      long rCount = 0;
+      long targetCount;
+      float numRev;
+    
+      // variables for tracking the left and right encoder counts
+      long prevlCount, prevrCount;
+    
+      long lDiff, rDiff;  // diff between current encoder count and previous count
+    
+      // variables for setting left and right motor power
+      int leftPower = motorPower;
+      int rightPower = motorPower;
+    
+      // variable used to offset motor power on right vs left to keep straight.
+      int offset = 5;  // offset amount to compensate Right vs. Left drive
+    
+      numRev = distance / wheelCirc;  // calculate the target # of rotations
+      targetCount = numRev * countsPerRev;    // calculate the target count
+    
+      // debug
+      Serial.print("driveStraight() ");
+      Serial.print(distance);
+      Serial.print(" inches at ");
+      Serial.print(motorPower);
+      Serial.println(" power.");
+    
+      Serial.print("Target: ");
+      Serial.print(numRev, 3);
+      Serial.println(" revolutions.");
+      Serial.println();
+      
+      // print out header
+      Serial.print("Left\t");   // "Left" and tab
+      Serial.print("Right\t");  // "Right" and tab
+      Serial.println("Target count");
+      Serial.println("============================");
+    
+      encoder.clearEnc(BOTH);    // clear the encoder count
+      delay(100);  // short delay before starting the motors.
+      
+      motors.drive(motorPower);  // start motors 
+    
+      while (rCount < targetCount)
+      {
+        // while the right encoder is less than the target count -- debug print 
+        // the encoder values and wait -- this is a holding loop.
+        lCount = encoder.getTicks(LEFT);
+        rCount = encoder.getTicks(RIGHT);
+        Serial.print(lCount);
+        Serial.print("\t");
+        Serial.print(rCount);
+        Serial.print("\t");
+        Serial.println(targetCount);
+    
+        motors.leftDrive(leftPower);
+        motors.rightDrive(rightPower);
+    
+        // calculate the rotation "speed" as a difference in the count from previous cycle.
+        lDiff = (lCount - prevlCount);
+        rDiff = (rCount - prevrCount);
+    
+        // store the current count as the "previous" count for the next cycle.
+        prevlCount = lCount;
+        prevrCount = rCount;
+    
+        // if left is faster than the right, slow down the left / speed up right
+        if (lDiff > rDiff) 
+        {
+          leftPower = leftPower - offset;
+          rightPower = rightPower + offset;
+        }
+        // if right is faster than the left, speed up the left / slow down right
+        else if (lDiff < rDiff) 
+        {
+          leftPower = leftPower + offset;  
+          rightPower = rightPower - offset;
+        }
+        delay(50);  // short delay to give motors a chance to respond.
+      }
+      // now apply "brakes" to stop the motors.
+      motors.brake();  
+    }
