@@ -36,21 +36,38 @@
       numRev = 2.3622 / wheelCirc;  // calculate the target # of rotations
       target = numRev * countsPerRev;
       
-      driveStraight(10,150);
-     
-     while(lCount<target)
+      driveStraight(35,150);
+
+      //90 degree
+     long i =0;
+     while(i<50)
       { 
       lCount = encoder.getTicks(RIGHT);  
-      motors.leftMotor(-250);
-      motors.rightMotor(-250);
+      motors.leftMotor(-200);
+      motors.rightMotor(-200);
       Serial.println(lCount);
-      count = count +1;
+      i = i+1;
       }
     
 
       delay(650);
 
-      driveStraight(10,250);
+    //drive lil bit
+      driveStraight(5,250);
+
+      //90 degree
+      long j =0; 
+     while(j<40)
+      { 
+      lCount = encoder.getTicks(RIGHT);  
+      motors.leftMotor(-250);
+      motors.rightMotor(-250);
+      Serial.println(lCount);
+      j = j+1;
+      }
+
+    //drive lil bit
+      driveStraight(50,250);
 
       delay(5000);
       motors.brake();
