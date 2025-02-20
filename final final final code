@@ -1,0 +1,144 @@
+
+    #include <RedBot.h>
+    RedBotMotors motors;
+    
+    RedBotEncoder encoder = RedBotEncoder(A2,A7);
+    int buttonPin = 12;
+    int countsPerRev = 192;   // 4 pairs of N-S x 48:1 gearbox = 192 ticks per wheel rev
+    
+    float wheelDiam = 5;  // diam = 65mm / 25.4 mm/in
+    float wheelCirc = PI*wheelDiam;  // Redbot wheel circumference = pi*D
+
+    long lcount=0;
+    long target;
+    float numRev; 
+    
+    void setup()
+    {
+      pinMode(buttonPin, INPUT_PULLUP);
+      Serial.begin(9600);
+      
+    }
+    
+    void loop(void)
+    {
+      // set the power for left & right motors on button press
+      driveStraight(30, 150);
+      delay(1000);
+      //first turn
+      motors.leftMotor(-200);
+      motors.rightMotor(-237);
+      delay(800);
+      motors.brake();
+      delay(1000);
+      //second straight
+      driveStraight(11.5,150);  
+      //turn onto ramp
+      motors.leftMotor(-200);
+      motors.rightMotor(-237);
+      delay(600);
+      motors.brake();
+      //drive up ramp
+      driveStraight(60, 200);
+      delay(1000);
+      motors.leftMotor(100);
+      motors.rightMotor(-100);
+      delay(100);
+      //turn on ramp
+      motors.leftMotor(200);
+      motors.rightMotor(237);
+      delay(480);
+      //first straightaway
+      driveStraight(45,90);
+      motors.leftMotor(100);
+      motors.rightMotor(-100);
+      delay(100); 
+      //second turn
+      motors.leftMotor(200);
+      motors.rightMotor(200);
+      //motors.brake();
+      
+      delay(850);
+      motors.leftMotor(95);
+      motors.rightMotor(110);
+
+      delay(400);
+      driveStraight(30,150);
+      
+    //   delay(1000);
+    //   motors.leftMotor(180);
+    //   motors.rightMotor(200);
+
+    //   delay(580);
+    //   driveStraight(30,150);
+    //   //motors.leftMotor(-50);
+    //   //motors.rightMotor(-50);
+    //   delay(5000);
+    //   motors.brake();
+     }
+    
+    void driveStraight(float distance, int motorPower)
+    {
+      long lcount = 0;
+      long rCount = 0;
+      long targetCount;
+      float numRev;
+    
+      // variables for tracking the left and right encoder counts
+      long prevlCount, prevrCount;
+    
+      long lDiff, rDiff;  // diff between current encoder count and previous count
+    
+      // variables for setting left and right motor power
+      int leftPower = motorPower;
+      int rightPower = motorPower+20;
+    
+      // variable used to offset motor power on right vs left to keep straight.
+      int offset = 5;  // offset amount to compensate Right vs. Left drive
+    
+      numRev = distance / wheelCirc;  // calculate the target # of rotations
+      targetCount = numRev * countsPerRev;    // calculate the target count
+    
+      // debug
+      Serial.print("driveStraight() ");
+      Serial.print(distance);
+      Serial.print(" inches at ");
+      Serial.print(motorPower);
+      Serial.println(" power.");
+    
+      Serial.print("Target: ");
+      Serial.print(numRev, 3);
+      Serial.println(" revolutions.");
+      Serial.println();
+      
+      // print out header
+      Serial.print("Left\t");   // "Left" and tab
+      Serial.print("Right\t");  // "Right" and tab
+      Serial.println("Target count");
+      Serial.println("============================");
+    
+      encoder.clearEnc(BOTH);    // clear the encoder count
+      delay(100);  // short delay before starting the motors.
+      
+      motors.drive(motorPower);  // start motors 
+    
+      while (lcount < targetCount)
+      {
+        // while the right encoder is less than the target count -- debug print 
+        // the encoder values and wait -- this is a holding loop.
+        lcount = encoder.getTicks(LEFT);
+        //rCount = encoder.getTicks(RIGHT);
+        Serial.print(lcount);
+        Serial.print("\t");
+        Serial.print(rCount);
+        Serial.print("\t");
+        Serial.println(targetCount);
+    
+        motors.leftDrive(leftPower);
+        motors.rightDrive(rightPower);
+        delay(50);  // short delay to give motors a chance to respond.
+      }
+      // now apply "brakes" to stop the motors.
+      motors.brake();  
+    }
+    
