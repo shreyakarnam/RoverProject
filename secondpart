@@ -21,19 +21,33 @@
     
     float wheelDiam = 5;  // diam = 65mm / 25.4 mm/in
     float wheelCirc = PI*wheelDiam;  // Redbot wheel circumference = pi*D
+
+    long lcount;
+    long targetCount;
+    float numRev; 
     
     void setup()
     {
       pinMode(buttonPin, INPUT_PULLUP);
       Serial.begin(9600);
-      driveStraight(32, 200);    
-      motors.leftMotor(100);
-      motors.rightMotor(100);
-      delay(580);
+      //driveStraight(32, 200);
+      numRev = 2.3622 / wheelCirc;  // calculate the target # of rotations
+      target = numRev * countsPerRev;
+      while(lcount<target)
+      { 
+      lCount = encoder.getTicks(LEFT);  
+      motors.leftMotor(150);
+      motors.rightMotor(150);
+      }
+      delay(500);
       driveStraight(40,150);
-      motors.leftMotor(100);
-      motors.rightMotor(100);
-      delay(580);
+      while(lcount<target)
+      { 
+      lCount = encoder.getTicks(LEFT);  
+      motors.leftMotor(150);
+      motors.rightMotor(150);
+      }
+      delay(650);
       driveStraight(40,150);
       motors.leftMotor(-50);
       motors.rightMotor(-50);
