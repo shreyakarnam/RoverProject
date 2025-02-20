@@ -25,6 +25,7 @@
     long lcount;
     long targetCount;
     float numRev; 
+    float target;
     
     void setup()
     {
