@@ -15,7 +15,7 @@
     #include <RedBot.h>
     RedBotMotors motors;
     
-    RedBotEncoder encoder = RedBotEncoder(A2,A6);
+    RedBotEncoder encoder = RedBotEncoder(A2, 7);
     int buttonPin = 12;
     int countsPerRev = 192;   // 4 pairs of N-S x 48:1 gearbox = 192 ticks per wheel rev
     
