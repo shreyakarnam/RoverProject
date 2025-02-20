@@ -1,54 +1,65 @@
- //Code to run the ramp to start the course
+  /***********************************************************************
+     * Exp7_3_DriveStraight -- RedBot Experiment 7.3
+     * 
+     * Knowing where your robot is can be very important. The RedBot supports
+     * the use of an encoder to track the number of revolutions each wheels has
+     * made, so you can tell not only how far each wheel has traveled but how
+     * fast the wheels are turning.
+     * 
+     * This sketch was written by SparkFun Electronics, with lots of help from 
+     * the Arduino community. This code is completely free for any use.
+     * 
+     * 8 Oct 2013 M. Hord
+     * Revised, 31 Oct 2014 B. Huang 
+     ***********************************************************************/
     #include <RedBot.h>
     RedBotMotors motors;
     
-    RedBotEncoder encoder = RedBotEncoder(A2, 10);
-    int buttonPin = 12; //check pin
+    RedBotEncoder encoder = RedBotEncoder(A2,A6);
+    int buttonPin = 12;
     int countsPerRev = 192;   // 4 pairs of N-S x 48:1 gearbox = 192 ticks per wheel rev
     
     float wheelDiam = 5;  // diam = 65mm / 25.4 mm/in
     float wheelCirc = PI*wheelDiam;  // Redbot wheel circumference = pi*D
+
+    long lCount = 0;
+    long targetCount;
+    float numRev; 
+    float target;
+    long count = 0;
     
     void setup()
     {
       pinMode(buttonPin, INPUT_PULLUP);
       Serial.begin(9600);
-      // Move forward 60 inches
-    driveStraight(35, 150);
-    delay (1000);
-
-//go back
-      motors.leftMotor(-500);
-      motors.rightMotor(-500);
-      delay(1200);
-
-//get wall-e
-     RedBotMotors motors;
+      //driveStraight(32, 200);
+      numRev = 2.3622 / wheelCirc;  // calculate the target # of rotations
+      target = numRev * countsPerRev;
+      
+      driveStraight(10,150);
      
-     pinMode(9, OUTPUT);
-     analogWrite(9,100);
-     delay(500);
-     analogWrite(9,0);
+     while(lCount<target)
+      { 
+      lCount = encoder.getTicks(RIGHT);  
+      motors.leftMotor(-250);
+      motors.rightMotor(-250);
+      Serial.println(lCount);
+      count = count +1;
+      }
+    
 
-    // Perform a 180-degree turn (left wheel backward, right wheel forward)
-    motors.leftMotor(-250);
-    motors.rightMotor(250);
-    delay(130);  // Adjust this delay for an accurate 180-degree turn
- 
- driveStraight(5, 150);
-    delay (1000);
+      delay(650);
 
-    motors.leftMotor(-250);
-    motors.rightMotor(250);
-    delay(130); 
+      driveStraight(10,250);
 
-    motors.brake();  // Stop after turning
-
+      delay(5000);
+      motors.brake();
     }
     
- void loop(void){
-    
-}
+    void loop(void)
+    {
+      // set the power for left & right motors on button press
+    }
     
     void driveStraight(float distance, int motorPower)
     {
@@ -100,7 +111,7 @@
         // while the right encoder is less than the target count -- debug print 
         // the encoder values and wait -- this is a holding loop.
         lCount = encoder.getTicks(LEFT);
-        rCount = encoder.getTicks(RIGHT);
+        //rCount = encoder.getTicks(RIGHT);
         Serial.print(lCount);
         Serial.print("\t");
         Serial.print(rCount);
@@ -127,7 +138,7 @@
         // if right is faster than the left, speed up the left / slow down right
         //else if (lDiff < rDiff) 
         //{
-          //leftPower = leftPower + offset;  
+         // leftPower = leftPower + offset;  
           //rightPower = rightPower - offset;
         //}
         delay(50);  // short delay to give motors a chance to respond.
